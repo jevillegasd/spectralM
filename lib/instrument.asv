@@ -1,0 +1,31 @@
+classdef instrument
+   properties
+        connection
+        manufacturer
+        model
+        serial
+        firmware
+        status
+   end
+   
+   methods
+      function obj = instrument(ipaddress)
+         if nargin > 0
+            obj.connection = tcpclient(ipaddress, 5025,'Timeout',10);
+            s = send(obj.connection,'*IDN?');
+            if (isempty(s))
+                Em = MException('SpectralM:COM:NoResponse','There is no complete response from the instrument in the configured Timeout period');
+                obj.status = "No connection.";
+                throw(Em);
+            end
+            stream = strtrim(strsplit(s,','));
+            
+            obj.manufacturer = stream(1);
+            obj.model = stream(2);
+            obj.serial = stream(3);
+            obj.firmware = stream(4); 
+            obj.status = "ok";
+         end
+      end
+   end
+end
